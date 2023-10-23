@@ -7,7 +7,7 @@ import org.springframework.hateoas.server.RepresentationModelAssembler;
 import org.springframework.stereotype.Component;
 
 @Component
-class EmployeeModelAssembler implements RepresentationModelAssembler<Employee, EntityModel<Employee>> {
+public class EmployeeModelAssembler implements RepresentationModelAssembler<Employee, EntityModel<Employee>> {
 
     @Override
     public EntityModel<Employee> toModel(Employee employee) {

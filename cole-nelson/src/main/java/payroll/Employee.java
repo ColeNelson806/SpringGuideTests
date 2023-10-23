@@ -2,12 +2,14 @@ package payroll;
 
 import java.util.Objects;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 @Entity
-class Employee {
+public class Employee {
 
     private @Id @GeneratedValue Long id;
     private String firstName;
@@ -16,7 +18,7 @@ class Employee {
 
     Employee() {}
 
-    Employee(String firstName, String lastName, String role) {
+    public Employee(String firstName, String lastName, String role) {
 
         this.firstName = firstName;
         this.lastName = lastName;
