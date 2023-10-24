@@ -16,10 +16,8 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 @Service
 public class EmployeeService implements InterfaceEmployeeService{
 
-    @Autowired
     private final EmployeeRepository employeeRepository;
 
-    @Autowired
     private final EmployeeModelAssembler assembler;
 
     EmployeeService(EmployeeRepository employeeRepository, EmployeeModelAssembler assembler){
@@ -54,6 +52,7 @@ public class EmployeeService implements InterfaceEmployeeService{
                 .map(employee -> {
                     employee.setName(newEmployee.getName());
                     employee.setRole(newEmployee.getRole());
+                    System.out.println(employeeRepository.save(employee));
                     return employeeRepository.save(employee);
                 }) //
                 .orElseGet(() -> {
