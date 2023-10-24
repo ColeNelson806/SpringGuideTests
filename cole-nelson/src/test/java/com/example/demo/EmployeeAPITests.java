@@ -5,14 +5,13 @@ import static io.restassured.matcher.RestAssuredMatchers.*;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.Mockito.*;
 
+import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import org.junit.Test;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.*;
 
+import org.junit.Before;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -33,12 +32,15 @@ public class EmployeeAPITests {
 
 //    private URI uri;
 
+    @Before
+    public void init() {
+        RestAssured.baseURI = "http://localhost";
+        RestAssured.port = this.port;
+        System.out.println(this.port);
+    }
 
     @Test
-    public void GetRequestAll() throws URISyntaxException {
-
-        URI uri = new URI("http://localhost:" + this.port);
-        System.out.println("\n" + uri + "\n");
+    public void GetRequestAll() {
 
         // Create the expected returned employee when saving to repository
         Employee returnedEmployee = new Employee("Samwise", "Gamgee", "gardener");
@@ -47,22 +49,25 @@ public class EmployeeAPITests {
         when(employeeRepository.save(Mockito.any(Employee.class))).thenReturn(returnedEmployee);
         when(employeeRepository.findAll()).thenReturn(List.of(returnedEmployee));
 
-
         // Get Request
         given()
         .when()
-                .get(uri + "/employees")
+                .get("/employees")
         .then()
                 .log().all()
-                .and().assertThat().statusCode(200)
-                .and().assertThat().body("_links.self", hasKey("href"));
+                .assertThat().statusCode(200)
+                .assertThat().body("_links.self", hasKey("href"))
+                .assertThat().body("_embedded.employeeList", hasSize(1));
+//                .assertThat().body("_embedded.employeeList[0]", hasEntry("firstName", "Samwise"))
+//                .assertThat().body("_embedded.employeeList[0]", hasEntry("lastName", "Gamgee"))
+//                .assertThat().body("_embedded.employeeList[0]", hasEntry("role", "gardener"))
+//                .assertThat().body("_embedded.employeeList[0]", hasEntry("name", "Samewise Gamgee"))
+//                .assertThat().body("_embedded.employeeList[0]._links.self", hasKey("href"))
+//                .assertThat().body("_embedded.employeeList[0]._links.self", hasToString("employees/10"));
     }
 
     @Test
-    public void GetRequestExistingId() throws URISyntaxException {
-
-        URI uri = new URI("http://localhost:" + this.port);
-        System.out.println("\n" + uri + "\n");
+    public void GetRequestExistingId() {
 
         Employee returnedEmployee = new Employee("Samwise", "Gamgee", "gardener");
         returnedEmployee.setId(10L);
@@ -71,34 +76,28 @@ public class EmployeeAPITests {
         when(employeeRepository.findById(Mockito.eq(10L))).thenReturn(Optional.of(returnedEmployee));
 
         given()
-                .when()
-                .get(uri + "/employees/10")
-                .then()
+        .when()
+                .get( "/employees/10")
+        .then()
                 .log().all()
                 .and().assertThat().statusCode(200)
                 .and().assertThat().body("_links.self", hasKey("href"));
     }
 
     @Test
-    public void GetRequestNonExistingId() throws URISyntaxException {
-
-        URI uri = new URI("http://localhost:" + this.port);
-        System.out.println("\n" + uri + "\n");
+    public void GetRequestNonExistingId() {
 
         given()
-                .when()
-                .get(uri + "/employees/1")
-                .then()
+        .when()
+                .get("/employees/1")
+        .then()
                 .log().all()
                 .and().assertThat().statusCode(404)
                 .and().assertThat().body(equalTo("Could not find employee 1"));
     }
 
     @Test
-    public void PostRequest() throws URISyntaxException {
-
-        URI uri = new URI("http://localhost:" + this.port);
-        System.out.println("\n" + uri + "\n");
+    public void PostRequest() {
 
         // Create the expected returned employee when saving to repository
         Employee returnedEmployee = new Employee("Jeffery", "Jo", "janitor");
@@ -109,7 +108,7 @@ public class EmployeeAPITests {
                 .contentType(ContentType.JSON)
                 .body(returnedEmployee)
         .when()
-                .post(uri + "/employees")
+                .post("/employees")
         .then()
                 .log().all()
                 .statusCode(201)
@@ -120,13 +119,10 @@ public class EmployeeAPITests {
     }
 
     @Test
-    public void PutRequestExistingId() throws URISyntaxException {
-        URI uri = new URI("http://localhost:" + this.port);
-        System.out.println("\n" + uri + "\n");
+    public void PutRequestExistingId() {
 
         Employee existingEmployee = new Employee("Jeffery", "Jo", "janitor");
         existingEmployee.setId(1L);
-
         Employee givenEmployee = new Employee("Jeffery", "Bo", "janitor");
 
         when(employeeRepository.save(Mockito.any(Employee.class))).thenReturn(existingEmployee);
@@ -138,7 +134,7 @@ public class EmployeeAPITests {
                 .contentType(ContentType.JSON)
                 .body(givenEmployee)
         .when()
-                .put(uri + "/employees/1")
+                .put("/employees/1")
         .then()
                 .log().all()
                 .statusCode(201)
@@ -149,19 +145,12 @@ public class EmployeeAPITests {
     }
 
     @Test
-    public void PutRequestNotExistingId() throws URISyntaxException {
-        URI uri = new URI("http://localhost:" + this.port);
-        System.out.println("\n" + uri + "\n");
-
-//        Employee existingEmployee = new Employee("Jeffery", "Jo", "janitor");
-//        existingEmployee.setId(1L);
+    public void PutRequestNotExistingId() {
 
         Employee givenEmployee = new Employee("Jeffery", "Bo", "janitor");
         givenEmployee.setId(2L);
 
-//        when(employeeRepository.save(Mockito.eq(existingEmployee))).thenReturn(existingEmployee);
         when(employeeRepository.save(Mockito.eq(givenEmployee))).thenReturn(givenEmployee);
-//        when(employeeRepository.findById(Mockito.eq(1L))).thenReturn(Optional.of(existingEmployee));
         when(employeeRepository.findById(Mockito.eq(2L))).thenReturn(Optional.empty());
 
         System.out.println(employeeRepository.findById(2L) + "\n");
@@ -170,7 +159,7 @@ public class EmployeeAPITests {
                 .contentType(ContentType.JSON)
                 .body(givenEmployee)
         .when()
-                .put(uri + "/employees/2")
+                .put("/employees/2")
         .then()
                 .log().all()
                 .statusCode(201)
@@ -181,9 +170,7 @@ public class EmployeeAPITests {
     }
 
     @Test
-    public void DeleteRequest() throws URISyntaxException {
-        URI uri = new URI("http://localhost:" + this.port);
-        System.out.println("\n" + uri + "\n");
+    public void DeleteRequest() {
 
         Employee givenEmployee = new Employee("Jeffery", "Bo", "janitor");
         givenEmployee.setId(2L);
@@ -192,7 +179,7 @@ public class EmployeeAPITests {
 
         given()
         .when()
-                .delete(uri + "/employees/1")
+                .delete("/employees/1")
         .then()
                 .log().all()
                 .statusCode(204);
