@@ -12,6 +12,7 @@ import java.net.URISyntaxException;
 import java.util.*;
 
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -44,6 +45,8 @@ public class EmployeeAPITests {
         returnedEmployee.setId(10L);
 
         when(employeeRepository.save(Mockito.any(Employee.class))).thenReturn(returnedEmployee);
+        when(employeeRepository.findAll()).thenReturn(List.of(returnedEmployee));
+
 
         // Get Request
         given()
